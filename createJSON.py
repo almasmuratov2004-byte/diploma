@@ -1,0 +1,136 @@
+import json
+from pathlib import Path
+
+
+CATEGORIES = {
+    'betting': [
+        'parimatch', '1xbet', 'melbet', 'pin-up', 'mostbet', 'bet365',
+        'fonbet', 'olimpbet', 'bwin', 'betway', 'leon', 'ggbet',
+        'vulkan', 'azino', 'joycasino', 'casino', 'slots', 'poker', 
+        'loto', 'stoloto', 'megalot', 'telebingo', 'jackpot', 'spin',
+        'fortuna', 'winner', 'stavka', 'bingo', 'ruletka', 'blackjack',
+        'totalizator', 'gaminator', 'eldorado', 'champion', 'betcity',
+        'gamepoint', 'game point', 'pari.kz', 'marathon.kz', 'ligastavok',
+        'tennisi', 'winline', '22bet', 'baltbet', 'xstavka', 'slot777',
+        'lucky.kz', 'pm.bet', 'dostykarena', 'globalcyberclub'
+    ],
+    'credit': [
+        'кредит', 'kredito', 'zaimer', 'solva', '4finance', 'moneyman',
+        'creditplus', 'turbomoney', 'kviku', 'cashberry', 'finbox',
+        'dengi.kz', 'займ', 'микрокредит', 'loan', 'smartcredit', 
+        'easymoney', 'fastloan', 'quickmoney', 'tengo', 'cashup',
+        'moneybox', 'payday', 'creditka', 'zaimka', 'dengitut',
+        'kaspi red', 'homecredit', 'центркредит', 'береке кредит',
+        'srochniyza', 'nakartu', 'microfinance', 'creditkz', 'financekz',
+        'bezotka', 'takemoney', 'acredit', 'finlite', 'mfo_lftech',
+        'safelombard', 'newpay*acredit', 'jetpay*acredit', 'mfo creditbar', 'onecredit', 'newpay*onecredit'
+    ],
+    'utility': [
+        'qazaqgaz', 'водные ресурсы', 'энергосбыт', 'энерго',
+        'теплосеть', 'жкх', 'kazakhtelecom', 'tele2', 'beeline', 
+        'activ', 'kcell', 'altel', 'tv com', 'otau tv', 'alma tv',
+        'homenet', 'megaline', 'горводоканал', 'жылу', 'онтустик жарык',
+        'алматыэнерго', 'астанаэнерго', 'id net', 'id phone', 'transtelecom',
+        'atyrausu', 'шымкентсу', 'астанасу', 'кызылорда газ', 'спутниковое тв',
+        'алматв', 'batys', 'atyrerc', 'ofd kaztelecom', 'smart qala'
+    ],
+    'transport': [
+        'indrive', 'яндекс такси', 'uber', 'didi', 'такси', 'taxi',
+        'tolem', 'avtobys', 'onay', 'метро', 'жд билет', 'ктж',
+        'air astana', 'flyarystan', 'fly arystan', 'scat', 'qazaq air', 
+        'автовокзал', 'jet sharing', 'whoosh', 'bolt', 'gett',
+        'bus station', 'авиа билет', 'kaspi travel', 'яндекс самокат',
+        'baikonyr station', 'sayran station', 'zhibek zholy station',
+        'zhibek zh. term', 'delta oil', 'helios', 'star oil', 'sinooil', 'gazprom azs', 
+        'shnos oil', 'qazaq oil', 'euro oil', 'adal'
+    ],
+    'government': [
+        'pravitelstvo', 'nalog', 'налог', 'detskih sadov', 'детский сад',
+        'shkoly', 'школ', 'universiteta', 'госуслуг', 'egov', 'цон',
+        'штраф', 'пдд', 'госпошлина', 'пенсионный', 'енпф', 'соцстрах',
+        'осмс', 'фомс', 'загс', 'нотариус', 'кадастр', 'автошкола',
+        'курсы вождения', 'медкомиссия', 'справка 086', 'вуз оплата',
+        'общежитие', 'библиотека', 'музей', 'театр', 'кино chaplin',
+        'юридические услуги', 'адвокат', 'земельный комитет', 'паспортный стол',
+        'миграционная служба', 'министерство', 'судебные издержки',
+        'гимназия', 'лицей', 'колледж', 'кбту оплата', 'кимэп', 'нархоз',
+        'sdu оплата', 'nu оплата', 'университет казну', 'safetydriving'
+    ],
+    'income': [
+        'с kaspi депозита', 'на kaspi депозит', 'с карты другого банка',
+        'со своего счета', 'в kaspi банкомате', 'в kaspi терминале',
+        'p2p wooppay', 'зарплата', 'пенсия', 'стипендия', 'пособие',
+        'кэшбэк', 'возврат товара', 'дивиденды', 'алименты',
+        'перевод от родственника', 'по номеру счета', 'kz*', 
+        'пополнение с ао', 'jusan bank', 'halyk bank', 'first heartland'
+    ],
+    'shops': [
+        'magnum', 'technodom', 'sulpak', 'metro', 'рамстор',
+        'галамарт', 'galmart', 'fix price', 'светофор', 'arzan', 
+        'аптека', 'apteka', 'europharma', 'minimarket', 'гастроном', 
+        'супермаркет', 'supermarket', 'азс', 'small', 'magazin', 'market',
+        'store', 'shop', 'produkty', 'cosmomarket', 'taugul', 'dauletten',
+        'toomarko', 'iprommix', 'toorommix', 'zhumka', 'berkad', 'eldana',
+        'freshmarket', 'goodmart', 'mymart', 'anvar', 'евразия', 'механик',
+        'skidka', 'interfood', 'халал маркет', 'восточный базар', 'бакалея',
+        'универсам', 'продукты', 'фрукты овощи', 'хозяюшка', 'gorodok',
+        'moskvakurmangazy', 'magazinmoskva', 'zaureshtattileri', 'dmatyrau',
+        'lcwaikiki', 'zerde', 'bota tattileri', 'корзинка', 'арзан', 'sat', 'rcku', 'balfood', 'jardi', 'nurpeyis', 'intellectatyrau',
+        'mizam', 'alseco', 'гипер', 'gippo', 'минимаркет', 'perekrestok',
+        'prodmag', 'million', 'xprice', 'superprice', 'береке'
+    ],
+    'cafes': [
+        'coffee', 'starbucks', 'costa', 'mcdonald', 'kfc', 'burger', 
+        'pizza', 'sushi', 'ресторан', 'кафе', 'grill', 'kebab', 'шашлык',
+        'angelinus', 'shokoladnitsa', 'marrone rosso', 'paul almaty',
+        'bbq house', 'yakitoria', 'plov house', 'дастархан', 'асказан',
+        'навруз', 'самарканд', 'ташкент', 'караван', 'мангал', 'lagman',
+        'beshbarmak', 'kazakh kitchen', 'national food', 'tandoor',
+        'eastern kitchen', 'asian food', 'del papa', 'papa johns', 'dominos',
+        'hardees', 'viva kebab', 'chaikhona', 'steakhouse', 'pasanauri',
+        'salam bro', 'dodo', 'marmelad', 'lakomka', 'lidertamasha', 'erkemay', 'italissima', 'krustykrabs', 'salambro',
+        'hungry bear', 'ata doner', 'dinos', 'bublik', 'shashlykmashlyk',
+        'aladdin', 'steakfield', 'artlunch', 'шашлычная', 'арбат'
+    ],
+    'hotels': [
+        'ritz carlton', 'rixos', 'intercontinental', 'hilton', 'novotel',
+        'holiday inn', 'radisson', 'sheraton'
+    ],
+    'entertainment': [
+        'кино', 'cinema', 'chaplin', 'kinopark', 'театр', 'цирк',
+        'парк', 'park', 'зоопарк', 'аквапарк', 'дендропарк',
+        'keremetpark', 'safaripark', 'jagalaupark', 'avatariya',
+        'tiqets', 'ticketon', 'ivi.ru', 'kino.kz', 'kinoplexx', 'dostyk arena'
+    ],
+    'health': [
+        'клиника', 'clinic', 'больница', 'hospital', 'стоматолог', 'dental',
+        'vitamed', 'westernclinic', 'medprestizh', 'meruert malysham'
+    ],
+    'parking': [
+        'парковка'
+    ],
+    'commission': [
+        'комиссия', 'годовое обслуживание', 'оплата за годовое'
+    ],
+    'atm': [
+        'банкомат', 'bankomat', 'аппарат самообслуживания', 'на карту другого банка'
+    ],
+    'online_services': [
+        'apple.com', 'google', 'facebook', 'facebk', 'spotify', 'netflix',
+        'youtube', 'glovoapp', 'olx', 'freedom pay*olx', 'herbalife'
+    ]
+}
+
+
+def create_json():
+    path = Path("categories.json")
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(CATEGORIES, f, ensure_ascii=False, indent=4)
+
+    print("✅ categories.json успешно создан рядом со скриптом")
+    print(f"📂 Путь: {path.resolve()}")
+
+
+if __name__ == "__main__":
+    create_json()
